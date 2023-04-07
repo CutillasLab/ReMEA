@@ -21,7 +21,7 @@ combined_remea_score <- function(df.remea_results){
 
   df.combi <- data.frame(perturbagen=dfx.zscore$perturbagens,
                          #av.p = apply(data.frame(dfx.zscore$qvalue,dfx.geommean$qvalue,dfx.mean$qvalue,dfx.med$qvalue),1,min),
-                          av.effect = apply(data.frame(dfx.zscore$mean,dfx.geommean$mean,dfx.mean$mean,dfx.med$mean),1,max))
+                          av.effect = apply(data.frame(dfx.zscore$mean,dfx.geommean$mean,dfx.mean$mean,dfx.med$mean),1,mean, na.rm=T))
 
 
   df.combi$combined_pvalue <- ReMEA::combined_pvalues(df.remea_results)
