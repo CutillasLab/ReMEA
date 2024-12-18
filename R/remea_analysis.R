@@ -48,7 +48,7 @@ get_ReMEA_scores <- function(protein_data,
 #' types and averaged analysis of RNAi and CRISPR. Both combined scores and individual
 #' db results are returned.
 #'
-#' @param protein_data `data.frame` Proteomics differential testing results. Protein name
+#' @param protein_data `data.table` Proteomics differential testing results. Protein name
 #' must be included as protein_acc. Fold change data must be in column 2.
 #' @param tumour_type `string` Whether to use markers from correlation analysis of solid tumours
 #' or non-solid tumours only. If multiple passed, these will be analysed in looped format.
@@ -63,9 +63,11 @@ complete_ReMEA_analysis <- function(protein_data,
                                     tumour_type,
                                     signature_version = "CellLines",
                                     save_xlxs = FALSE){
-  # Check if object is data.table.
-  if (data.table::is.data.table(protein_data)) {
-    protein_data <- as.data.frame(protein_data)
+  if (missingArg(protein_data) | missingArg(tumour_type)){
+    stop("Please provide the required arguments.")
+  }
+  if (!data.table::is.data.table(protein_data)) {
+    protein_data <- data.table::as.data.table(protein_data)
   }
   # ReMEA score for drugs
   SigEnrichDrug <-  ReMEA::response_marker_enrichment_analysis(protein_data = na.omit(protein_data),
@@ -91,21 +93,21 @@ complete_ReMEA_analysis <- function(protein_data,
                                                                  tumour_type = tumour_type)
   SigEnrichGENE_combined <-  ReMEA::combine_remea_scores(remea_results = SigEnrichGENE)
   message("ReMEA scoring for RNAi/CRISPR complete.")
-  scores <- list(remea_scores_drug_combined = SigEnrichDrug_combined,
-                 remea_scores_drug_individual_dbs = SigEnrichDrug,
-                 remea_scores_rnai_combined = SigEnrichRNAi_combined,
-                 remea_scores_rnai_individual_dbs = SigEnrichRNAi,
-                 remea_scores_crispr_combined = SigEnrichCRISPR_combined,
-                 remea_scores_crispr_individual_dbs = SigEnrichCRISPR,
-                 remea_scores_gene_combined = SigEnrichGENE_combined,
-                 remea_scores_gene_individual_dbs = SigEnrichGENE
+  scores <- list(drug_combined = SigEnrichDrug_combined,
+                 drug_individual_dbs = SigEnrichDrug,
+                 rnai_combined = SigEnrichRNAi_combined,
+                 rnai_individual_dbs = SigEnrichRNAi,
+                 crispr_combined = SigEnrichCRISPR_combined,
+                 crispr_individual_dbs = SigEnrichCRISPR,
+                 gene_combined = SigEnrichGENE_combined,
+                 gene_individual_dbs = SigEnrichGENE
                  )
-  if (xlxs_save) {
+  if (save_xlxs) {
     if (requireNamespace("openxlsx", quietly = TRUE)) {
       message("Saving ReMEA scores as xlxs file...")
       formatted_time <- format(Sys.time(), "%d-%m-%Y_%H-%M")
       openxlsx::write.xlsx(scores, paste0(formatted_time, "_ReMEA_scores.xlsx"))
-      message("Excel file saved as: ", file_name)
+      message("Excel file saved as: ", paste0(formatted_time, "_ReMEA_scores.xlsx"))
     } else {
       warning("The 'openxlsx' package is not installed. Install it to save ReMEA results as Excel files.")
     }

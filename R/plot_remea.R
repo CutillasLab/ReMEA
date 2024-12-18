@@ -7,8 +7,8 @@
 #' @export
 #'
 #' @examples
-plot_ReMEA_scores <- function(combined_remea,
-                              drug_target_genes = FALSE){
+plot_combined_ReMEA_scores <- function(combined_remea,
+                                       drug_target_genes = FALSE){
   if (!data.table::is.data.table(combined_remea)) {
     message("Note, combined_remea was not passed as data.table, converting now...")
     combined_remea <- data.table::as.data.table(combined_remea)
@@ -78,6 +78,78 @@ plot_individual_db_ReMEA_scores <- function(remea_db_scores,
   return(remea_db_plot)
 }
 
+#' ReMEA dotplot panel
+#'
+#' @param combined_remea `data.table` of combined ReMEA scores. Output of `combine_remea_scores` function.
+#' @param individual_db_scores `data.table` of individual db scores. Output of `response_marker_enrichment_analysis` function.
+#' @param drug_target_genes `data.table` of combined ReMEA scores. Output of `combine_remea_scores` function.
+#' @param topn `integer` number of top perturbations to plot.
+#'
+#' @return
+#' @export
+remea_dotplots <- function(combined_remea,
+                           remea_db_scores,
+                           drug_target_genes = FALSE,
+                           topn = 25){
+  if (missingArg(combined_remea) | missingArg(remea_db_scores)){
+    stop("Please provide the required data to make the plots.")
+  }
+  if (!requireNamespace("cowplot", quietly = TRUE)){
+    stop("This function requires the 'cowplot' library")
+  }
+  if (!data.table::is.data.table(combined_remea) | !data.table::is.data.table(remea_db_scores)) {
+    message("Note, combined_remea or remea_db_scores was not passed as data.table, converting now...")
+    combined_remea <- data.table::as.data.table(combined_remea)
+  }
+  if (drug_target_genes == TRUE){
+    combined_remea <- combined_remea[order(-av.effect)][perturbagen %in% ReMEA::drug_target_genes]
+  }
+  subset_dt <- combined_remea[order(-av.effect)][1:topn]
+  # Replace 0 p values
+  cols_to_replace <- c("ks_qvalue", "bws_qvalue")
+  subset_dt[, (cols_to_replace) := lapply(.SD, function(x) ifelse(x == 0, 1e-300, x)), .SDcols = cols_to_replace]
+  subset_dt[, alpha := av.effect * -log10(ks_qvalue)]
+
+  ggplot(subset_dt,aes(x=av.effect, y=reorder(perturbagen, av.effect),color=-log10(ks_qvalue)))+
+    geom_point(aes(size=alpha))+
+    scale_color_gradient2(low="grey",mid = "orange",high = "red", midpoint = median(-log10(subset_dt$ks_qvalue),na.rm = T))+
+    theme_bw()+
+    theme(axis.title.y = element_blank(), legend.direction = "vertical")+
+    xlab("Combined ReMEA score")+
+    geom_vline(xintercept = 0)+
+    geom_vline(xintercept = 1, linetype = "dashed") -> remea_plot
+
+  subset_dt[, perturbagen] -> perturts_for_single
+  # P value color
+  min_p <- -log10(min(remea_db_scores[perturbagen %in% perturts_for_single, ks_qvalue]))
+  max_p <- -log10(max(remea_db_scores[perturbagen %in% perturts_for_single, ks_qvalue]))
+  if (is.infinite(min_p )){min_p = 0}
+  points_p <- seq(max_p, min_p, length.out = 4)
+
+  data.table::merge.data.table(remea_db_scores[perturbagen %in% perturts_for_single],
+                               subset_dt[,.(perturbagen, av.effect)],
+                               by = "perturbagen") -> db_dt
+
+  ggplot(db_dt,
+         aes(x = max_delta_score, y = reorder(perturbagen, av.effect)))+
+    geom_point(aes(size = -log10(ks_qvalue), color = -log10(ks_qvalue)))+
+    scale_color_gradient2(low="white", mid = "orange", high = "purple4", midpoint = 0.7, breaks=points_p)+
+    scale_size_continuous(breaks=points_p)+
+    theme_bw()+
+    guides(color= guide_legend(), size=guide_legend())+
+    theme(axis.title.y = element_blank(),
+          legend.direction = "vertical")+
+    xlab("Single DB max delta scores")+
+    geom_vline(xintercept = 0)+
+    geom_vline(xintercept = 1,
+               linetype = "dashed") -> remea_db_plot
+
+  combined_plot <- cowplot::plot_grid(remea_plot,
+                                      remea_db_plot,
+                                      ncol = 2)
+  return(combined_plot)
+}
+
 #' Plot ReMEA score volcano
 #'
 #' @param combined_remea `data.table` of combined ReMEA scores. Output of `combine_remea_scores` function.
@@ -131,8 +203,8 @@ plot_crispr_vs_rnai <- function(remea_scores = NULL,
   if (is.null(remea_scores) & is.null(combined_RNAi) & is.null(combined_CRISPR)){
     stop("Please pass either: List of complete ReMEA analysis, or combined scores for RNAi and CRISPR perturbations.")
   } else if (!is.null(remea_scores)){
-    combined_RNAi <- remea_scores$remea_scores_rnai_combined
-    combined_CRISPR <- remea_scores$remea_scores_crispr_combined
+    combined_RNAi <- remea_scores$rnai_combined
+    combined_CRISPR <- remea_scores$crispr_combined
   } else if (is.null(combined_RNAi) | is.null(combined_CRISPR)){
     stop("Please pass the required data.")
   }
@@ -199,15 +271,15 @@ plot_drug_vs_gene <- function(remea_scores = NULL,
     if (is.null(gene_perturbation_type)){
       print("If passing complete_ReMEA_analysis list, please choose genetic perturbation type.")
     } else if (gene_perturbation_type == "RNAi"){
-      combined_gene <- remea_scores$remea_scores_rnai_combined
+      combined_gene <- remea_scores$rnai_combined
     } else if (gene_perturbation_type == "CRISPR"){
-      combined_gene <- remea_scores$remea_scores_crispr_combined
+      combined_gene <- remea_scores$crispr_combined
     } else if (gene_perturbation_type == "RNAi_CRISPR") {
-      combined_gene <- remea_scores$remea_scores_gene_combined
+      combined_gene <- remea_scores$gene_combined
     } else {
       print("Please supply correct input.")
     }
-    combined_drug <- remea_scores$remea_scores_drug_combined
+    combined_drug <- remea_scores$drug_combined
   } else if (is.null(combined_drug) | is.null(combined_gene)){
     print("Please pass the required data.")
   }
@@ -264,32 +336,3 @@ plot_drug_vs_gene <- function(remea_scores = NULL,
   return(remea_plot)
 }
 
-#' ReMEA plot panel
-#'
-#' @param individual_db_scores `data.table` of individual db scores. Output of `response_marker_enrichment_analysis` function.
-#' @param combined_remea `data.table` of combined ReMEA scores. Output of `combine_remea_scores` function.
-#' @param drug_target_genes `data.table` of combined ReMEA scores. Output of `combine_remea_scores` function.
-#'
-#' @return
-#' @export
-remea_plots <- function(individual_db_scores,
-                        combined_remea,
-                        drug_target_genes = FALSE){
-
-  if (!requireNamespace("cowplot", quietly = TRUE)){
-    stop("This function requires the 'cowplot' library")
-  }
-  if (drug_target_genes == TRUE){
-    combined_remea <- combined_remea[perturbagen %in% ReMEA::drug_target_genes]
-    individual_db_scores <- individual_db_scores[perturbagen %in% ReMEA::drug_target_genes]
-  }
-  av.effect.plot <- ReMEA::plot_ReMEA_scores(combined_remea)
-  individual.score.plot <- ReMEA::plot_individual_db_ReMEA_scores(individual_db_scores)
-  volcano.plot <- ReMEA::plot_ReMEA_volcano(combined_remea)
-
-  combined_plot <- cowplot::plot_grid(av.effect.plot,
-                                      individual.score.plot,
-                                      volcano.plot,
-                                      ncol = 3,
-                                      rel_widths = c(1.2, 1.2, 2))
-}

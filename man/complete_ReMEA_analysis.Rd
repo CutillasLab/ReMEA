@@ -12,7 +12,7 @@ complete_ReMEA_analysis(
 )
 }
 \arguments{
-\item{protein_data}{`data.frame` Proteomics differential testing results. Protein name
+\item{protein_data}{`data.table` Proteomics differential testing results. Protein name
 must be included as protein_acc. Fold change data must be in column 2.}
 
 \item{tumour_type}{`string` Whether to use markers from correlation analysis of solid tumours
