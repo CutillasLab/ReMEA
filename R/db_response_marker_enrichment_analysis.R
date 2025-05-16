@@ -26,156 +26,26 @@
 #' marker_type=c("DRUG", "RNAi", "CRISPR"),
 #' tumour_type=c("haem","solid"))
 response_marker_enrichment_analysis <- function(protein_data,
-                                                marker_type=c("DRUG", "RNAi", "CRISPR"),
-                                                tumour_type=c("haem","solid"),
-                                                signature_version = "CellLines",
-                                                dataset_selection = FALSE,
-                                                proteomics_datasets = NULL,
-                                                perturbation_datasets = NULL){
+                                                signatures_to_analyse,
+                                                signature_ids = NULL){
   # Check if object is data.table.
   if (data.table::is.data.table(protein_data)) {
     protein_data <- as.data.frame(protein_data)
   }
-  # Get signatures to analyse
-  signature_list <- ReMEA::select_signature(signature_version = signature_version)
-  signatures_to_analyse <- foreach::foreach(m=marker_type, .combine="c")%do%{
-    foreach::foreach(tt = tumour_type, .combine = "c")%do%{
-      return(names(signature_list)[grepl(m, names(signature_list), fixed = FALSE, ignore.case = TRUE) &
-                                     grepl(tt, names(signature_list), fixed = FALSE, ignore.case = TRUE)])
-    }
-  }
-  if (length(signatures_to_analyse) == 0){
-    stop("No signature DB with those arguments has been found.
-         Ensure signature id options refer to atleast one of the listed signature lists.")
-  }
-  # If selected, only use signatures from specific datasets
-  if (dataset_selection == TRUE){
-    if (!is.null(proteomics_datasets) & !is.null(perturbation_datasets)){
-      sigs_prot <- grepl(paste0(proteomics_datasets, collapse = "|"), signatures_to_analyse, ignore.case = TRUE)
-      sigs_pert <- grepl(paste0(perturbation_datasets, collapse = "|"), signatures_to_analyse, ignore.case = TRUE)
-      signatures_to_analyse <- signatures_to_analyse[sigs_prot & sigs_pert]
-    } else if (!is.null(proteomics_datasets) & is.null(perturbation_datasets)){
-      sigs_prot <- grepl(paste0(proteomics_datasets,collapse = "|"), signatures_to_analyse, ignore.case = TRUE)
-      signatures_to_analyse <- signatures_to_analyse[sigs_prot]
-    } else if (is.null(proteomics_datasets) & !is.null(perturbation_datasets)){
-      sigs_pert <- grepl(paste0(perturbation_datasets,collapse = "|"), signatures_to_analyse, ignore.case = TRUE)
-      signatures_to_analyse <- signatures_to_analyse[sigs_pert]
-    }
+  if (is.null(signature_ids)){
+    signature_ids <- names(signatures_to_analyse)
   }
   # Perform enrichment
   future::plan(future::multisession)
-  result_list <- foreach::foreach(s = signatures_to_analyse,
+  result_list <- foreach::foreach(s = signature_ids,
                                   .options.future = list(seed = TRUE))%dofuture%{
-    sl <- signature_list[[s]]
-
+    sl <- signatures_to_analyse[[s]]
     if (nrow(sl)>1){
       return(ReMEA::signature_enrichment(protein_data = protein_data,
                                          signatures = sl,
                                          signature.type = s))
     }
   }
-  enrichment_dt <- data.table::rbindlist(result_list)
-  enrichment_dt[
-    , c("delta.zscore",
-        "total_counts",
-        "delta_rank_mean",
-        "delta_rank_median",
-        "delta_rank_geomean") := .(
-          zscore.sensitivity - zscore.resistance,
-          n.resistance.markers + n.sensitivity.markers,
-          log2(av.rank.sensitivity) - log2(av.rank.resistance),
-          log2(med.rank.sensitivity) - log2(med.rank.resistance),
-          log2(geommean.rank.sensitivity) - log2(geommean.rank.resistance)
-        )]
-  enrichment_dt[, max_delta_score := apply(.SD[, c("delta.zscore", "delta_rank_geomean",
-                                                   "delta_rank_mean", "delta_rank_median")],
-                                           1, function(x) max(abs(x), na.rm = T))]
-  enrichment_dt[, c("ks_qvalue", "ks_p_padj_bonf", "bws_qvalue", "bws_padj_bonf") := .(
-    p.adjust(pvalue.ks, method = "BH"),
-    p.adjust(pvalue.ks, method = "bonferroni"),
-    p.adjust(pvalue.bws, method = "BH"),
-    p.adjust(pvalue.bws, method = "bonferroni")
-  ), by = signature.type]
-
-  return(enrichment_dt)
-}
-
-#' @title Response marker enrichment analysis APOCRITA VERSION
-#'
-#' @description Same as main version except dofutures is not implemented.
-#' Performs signture delta ranks and delta zscores iteratively across
-#' selected signature DBs. Determined by perturbation type, tumour type and siganture
-#' set.
-#' @param protein_data `data.frame` Proteomics differential testing results. Protein name
-#' must be included as protein_acc. Fold change data must be in column 2.
-#' @param marker_type `string` Perturbation type for analysis. These are CRISPR, RNAi or DRUG.
-#' Multiple markers may be passed. In case of selecting both RNAi and CRISPR, these
-#' may be combined using the `combine_remea_score` function
-#' @param tumour_type `string` Whether to use markers from correlation analysis of solid tumours
-#'  or non-solid tumours only. If multiple passed, these will be analysed in looped format.
-#' @param signature_version `string` Signature version to use.
-#' @param dataset_selection `logical` Whether to select specific signature DBs.
-#' @param proteomics_datasets `string` Ids for proteomics dataset based signature
-#' DB section.
-#' @param perturbation_datasets `string` Ids for perturbation dataset based signature
-#' DB section.
-#' @return `data.table` ReMEA scores and p values for selected signature DBs.
-#' @importFrom foreach %do%
-#' @import doFuture
-#' @export
-#'
-#' @examples
-#' response_marker_enrichment_analysis(protein_data,
-#' marker_type=c("DRUG", "RNAi", "CRISPR"),
-#' tumour_type=c("haem","solid"))
-response_marker_enrichment_analysis_APROCRITA <- function(protein_data,
-                                                          marker_type=c("DRUG", "RNAi", "CRISPR"),
-                                                          tumour_type=c("haem","solid"),
-                                                          signature_version = "CellLines",
-                                                          dataset_selection = FALSE,
-                                                          proteomics_datasets = NULL,
-                                                          perturbation_datasets = NULL){
-  # Check if object is data.table.
-  if (data.table::is.data.table(protein_data)) {
-    protein_data <- as.data.frame(protein_data)
-  }
-  # Get signatures to analyse
-  signature_list <- ReMEA::select_signature(signature_version = signature_version)
-  signatures_to_analyse <- foreach::foreach(m=marker_type, .combine="c")%do%{
-    foreach::foreach(tt = tumour_type, .combine = "c")%do%{
-      return(names(signature_list)[grepl(m, names(signature_list), fixed = FALSE, ignore.case = TRUE) &
-                                     grepl(tt, names(signature_list), fixed = FALSE, ignore.case = TRUE)])
-    }
-  }
-  if (length(signatures_to_analyse) == 0){
-    stop("No signature DB with those arguments has been found.
-         Ensure signature id options refer to atleast one of the listed signature lists.")
-  }
-  # If selected, only use signatures from specific datasets
-  if (dataset_selection == TRUE){
-    if (!is.null(proteomics_datasets) & !is.null(perturbation_datasets)){
-      sigs_prot <- grepl(paste0(proteomics_datasets, collapse = "|"), signatures_to_analyse, ignore.case = TRUE)
-      sigs_pert <- grepl(paste0(perturbation_datasets, collapse = "|"), signatures_to_analyse, ignore.case = TRUE)
-      signatures_to_analyse <- signatures_to_analyse[sigs_prot & sigs_pert]
-    } else if (!is.null(proteomics_datasets) & is.null(perturbation_datasets)){
-      sigs_prot <- grepl(paste0(proteomics_datasets,collapse = "|"), signatures_to_analyse, ignore.case = TRUE)
-      signatures_to_analyse <- signatures_to_analyse[sigs_prot]
-    } else if (is.null(proteomics_datasets) & !is.null(perturbation_datasets)){
-      sigs_pert <- grepl(paste0(perturbation_datasets,collapse = "|"), signatures_to_analyse, ignore.case = TRUE)
-      signatures_to_analyse <- signatures_to_analyse[sigs_pert]
-    }
-  }
-  # Perform enrichment
-  result_list <- foreach::foreach(s = signatures_to_analyse,
-                                  .options.future = list(seed = TRUE))%do%{
-                                    sl <- signature_list[[s]]
-
-                                    if (nrow(sl)>1){
-                                      return(ReMEA::signature_enrichment(protein_data = protein_data,
-                                                                         signatures = sl,
-                                                                         signature.type = s))
-                                    }
-                                  }
   enrichment_dt <- data.table::rbindlist(result_list)
   enrichment_dt[
     , c("delta.zscore",

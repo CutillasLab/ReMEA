@@ -16,11 +16,7 @@ combine_remea_scores <- function(remea_results){
     print("Note, remea_results was not passed as data.table, converting now...")
     remea_results <- data.table::as.data.table(remea_results)  # Convert to data.table if it's not
   }
-  if (any(grepl("DRUG", remea_results$signature.type))){
-    # To enable score averaging across compounds tested on multuple sites
-    remea_results$signature.type <- paste0(remea_results$signature.type, "_", sapply(strsplit(remea_results$perturbagen  , "_(?!.*_)", perl=TRUE), function(x) x[2]))
-    remea_results$perturbagen <- sapply(strsplit(remea_results$perturbagen  , "_(?!.*_)", perl=TRUE), function(x) x[1])
-  }
+
   .scale_get_mean <- function(dtr, by="delta_rank_median"){
     xx <- data.table::dcast(perturbagen ~ signature.type, value.var = by, data = dtr)
     xx[, mean := scale(rowMeans(.SD, na.rm = TRUE)), .SDcols = is.numeric]

@@ -6,12 +6,8 @@
 \usage{
 response_marker_enrichment_analysis(
   protein_data,
-  marker_type = c("DRUG", "RNAi", "CRISPR"),
-  tumour_type = c("haem", "solid"),
-  signature_version = "CellLines",
-  dataset_selection = FALSE,
-  proteomics_datasets = NULL,
-  perturbation_datasets = NULL
+  signatures_to_analyse,
+  signature_ids = NULL
 )
 }
 \arguments{
