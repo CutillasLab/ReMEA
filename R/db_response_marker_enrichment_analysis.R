@@ -104,11 +104,11 @@ response_marker_enrichment_analysis <- function(protein_data,
 #'
 #' @description Same as main version except dofutures is not implemented.
 #' Performs signture delta ranks and delta zscores iteratively across
-#' selected signature DBs. Determined by pertubation type, tumour type and siganture
+#' selected signature DBs. Determined by perturbation type, tumour type and siganture
 #' set.
 #' @param protein_data `data.frame` Proteomics differential testing results. Protein name
 #' must be included as protein_acc. Fold change data must be in column 2.
-#' @param marker_type `string` Perturbagen type for analysis. These are CRISPR, RNAi or DRUG.
+#' @param marker_type `string` Perturbation type for analysis. These are CRISPR, RNAi or DRUG.
 #' Multiple markers may be passed. In case of selecting both RNAi and CRISPR, these
 #' may be combined using the `combine_remea_score` function
 #' @param tumour_type `string` Whether to use markers from correlation analysis of solid tumours
@@ -284,6 +284,94 @@ signature_enrichment <- function(protein_data,
         signature.type
       )
       }},
+    by = perturbagen
+  ]
+
+  return(dt_enrichment)
+}
+
+#' Signature enrichment CTAMS
+#'
+#' CTAM marker enrichment function for ReMEA pipeline.
+#'
+#' @param protein_data `data.frame` Proteomics differential testing results. Protein name
+#' must be included as protein_acc. Fold change data must be in column 2.
+#' @param signatures `data.table` Signature DB with response protein signatures.
+#' This can be found in the ReMEA NAMESPACE. e.g. ReMEA::list_of_signature_lists
+#' @param signature.type `string` Naming variable for signatures. Main purpose if for
+#' response_marker_enrichment_analysis, where this indicates signature DB ids.
+#'
+#' @return `data.table` with enrichment results
+#' @export
+#'
+#' @examples
+#' signature_enrichemnt(protein_data = protein_data, signatures  = signature_dt, signature.type = "signature_id")
+CTAM_signature_enrichment <- function(protein_data,
+                                      signatures,
+                                      signature.type){
+  # Check if object is data.table.
+  if (data.table::is.data.table(protein_data)) {
+    protein_data <- as.data.frame(protein_data)
+  }
+  protein_data <- na.omit(protein_data)
+  protein_data[,2] <- scale(protein_data[,2]) # How will this effect results?
+  protein_data$protein_rank <- rank(protein_data[,2])
+  mean.population <- mean(protein_data[,2])
+  sd.population <- sd(protein_data[,2])
+
+  dt_enrichment <- signatures[n.resistance.markers > 2 & n.sensitivity.markers > 2, {
+    resistance.signature <- unlist(strsplit(proteins.resistance.markers,';'))
+    sensitivity.signature <- unlist(strsplit(proteins.sensitivity.markers,';'))
+    df.prot.res <- protein_data[protein_data$protein_acc %in% resistance.signature, ]
+    df.prot.sen <- protein_data[protein_data$protein_acc %in% sensitivity.signature, ]
+
+    if (nrow(df.prot.res)>2 & nrow(df.prot.sen)>2){
+      resistance.markers <- paste(unique(df.prot.res$protein_acc),collapse = ";")
+      sensitivity.markers <- paste(unique(df.prot.sen$protein_acc),collapse = ";")
+      ks.p <- ks.test(df.prot.res[,2],df.prot.sen[,2]) # This needs investigation
+      pvalue.ks <- ks.p$p.value
+      stat.ks <- ks.p$statistic
+      pvalue.bws <- tryCatch({
+        BWStest::bws_test(df.prot.res[,2], df.prot.sen[,2],
+                          method = 'BWS',
+                          alternative = 'two.sided')$p.value
+      }, error = function(e) {
+        1
+      })
+      zscore.resistance <- (mean(df.prot.res[,2])-mean.population)/sd.population
+      zscore.sensitivity <- (mean(df.prot.sen[,2])-mean.population)/sd.population
+
+      perturbagen.signature <- signature
+      av.rank.resistance <-  mean(df.prot.res$protein_rank)
+      av.rank.sensitivity <- mean(df.prot.sen$protein_rank)
+
+      geommean.rank.resistance <- ReMEA::gm_mean(df.prot.res$protein_rank)
+      geommean.rank.sensitivity <- ReMEA::gm_mean(df.prot.sen$protein_rank)
+
+      med.rank.resistance <- median(df.prot.res$protein_rank)
+      med.rank.sensitivity <- median(df.prot.sen$protein_rank)
+
+      n.resistance.markers <- nrow(df.prot.res)
+      n.sensitivity.markers <- nrow(df.prot.sen)
+      .(
+        zscore.resistance,
+        zscore.sensitivity,
+        pvalue.ks,
+        stat.ks,
+        pvalue.bws,
+        resistance.markers,
+        sensitivity.markers,
+        av.rank.resistance,
+        av.rank.sensitivity,
+        geommean.rank.resistance,
+        geommean.rank.sensitivity,
+        med.rank.resistance,
+        med.rank.sensitivity,
+        n.resistance.markers,
+        n.sensitivity.markers,
+        signature.type
+      )
+    }},
     by = perturbagen
   ]
 
