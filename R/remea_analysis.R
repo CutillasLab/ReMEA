@@ -5,9 +5,11 @@
 #' @param tumour_type `string` Whether to use markers from correlation analysis of solid tumours
 #' or non-solid tumours only. If multiple passed, these will be analysed in looped format.
 #' @param marker_type `string` Perturbagen type for analysis. These are CRISPR, RNAi or DRUG.
-#' Multiple markers may be passed. In case of selecting both RNAi and CRISPR, these
-#' may be combined using the `combine_remea_score` function.
+#' In case of selecting both RNAi and CRISPR, these may be combined using the `combine_remea_score` function.
 #' @param signature_version `string` Signature version to use.
+#' @param protein_id_col Column for protein identities. To use package signatures,
+#' these must refer to UniProt entry name of proteins. If NULL, will default to first column.
+#' @param analysis_col Data column to analysis. If NULL, will default to second column.
 #' @param return_individual_scores `logical` whether to return results for individual db scores.
 #'
 #' @return `data.table` of combined ReMEA scores if return_individual_scores == FALSE,
@@ -16,10 +18,16 @@
 #'
 #' @examples
 get_ReMEA_scores <- function(protein_data,
-                             tumour_type,
+                             tumour_type = c("pan"),
                              marker_type = "DRUG",
                              signature_version = "CellLines",
+                             protein_id_col = NULL,
+                             analysis_col = NULL,
                              return_individual_scores = FALSE){
+
+  if (missingArg(protein_data)){
+    stop("Please provide `protein_data` argument.")
+  }
   # Check if object is data.table.
   if (data.table::is.data.table(protein_data)) {
     protein_data <- as.data.frame(protein_data)
@@ -27,6 +35,8 @@ get_ReMEA_scores <- function(protein_data,
   remea_indv_dbs <- ReMEA::response_marker_enrichment_analysis(protein_data = protein_data,
                                                                marker_type = marker_type,
                                                                tumour_type = tumour_type,
+                                                               protein_id_col = protein_id_col,
+                                                               analysis_col = analysis_col,
                                                                signature_version = signature_version)
 
   combined_remea_scores <- ReMEA::combine_remea_scores(remea_results = remea_indv_dbs)
@@ -53,6 +63,9 @@ get_ReMEA_scores <- function(protein_data,
 #' @param tumour_type `string` Whether to use markers from correlation analysis of solid tumours
 #' or non-solid tumours only. If multiple passed, these will be analysed in looped format.
 #' @param signature_version `string` Signature version to use.
+#' @param protein_id_col Column for protein identities. To use package signatures,
+#' these must refer to UniProt entry name of proteins. If NULL, will default to first column.
+#' @param analysis_col Data column to analysis. If NULL, will default to second column.
 #' @param save_xlxs `logical` Whether or not to save scores to xlxs file.
 #'
 #' @return ggplot object
@@ -60,11 +73,13 @@ get_ReMEA_scores <- function(protein_data,
 #'
 #' @examples
 complete_ReMEA_analysis <- function(protein_data,
-                                    tumour_type,
+                                    tumour_type=c("pan"),
                                     signature_version = "CellLines",
+                                    protein_id_col = NULL,
+                                    analysis_col = NULL,
                                     save_xlxs = FALSE){
-  if (missingArg(protein_data) | missingArg(tumour_type)){
-    stop("Please provide the required arguments.")
+  if (missingArg(protein_data)){
+    stop("Please provide `protein_data` argument.")
   }
   if (!data.table::is.data.table(protein_data)) {
     protein_data <- data.table::as.data.table(protein_data)
@@ -72,25 +87,33 @@ complete_ReMEA_analysis <- function(protein_data,
   # ReMEA score for drugs
   SigEnrichDrug <-  ReMEA::response_marker_enrichment_analysis(protein_data = na.omit(protein_data),
                                                                marker_type = c("DRUG"),
-                                                               tumour_type = tumour_type)
+                                                               tumour_type = tumour_type,
+                                                               protein_id_col = protein_id_col,
+                                                               analysis_col = analysis_col)
   SigEnrichDrug_combined <- ReMEA::combine_remea_scores(remea_results = SigEnrichDrug)
   message("ReMEA scoring for drugs complete.")
   # ReMEA scores for RNAi
   SigEnrichRNAi <-  ReMEA::response_marker_enrichment_analysis(protein_data = na.omit(protein_data),
-                                                                marker_type = c("RNAi"),
-                                                                tumour_type = tumour_type)
+                                                               marker_type = c("RNAi"),
+                                                               tumour_type = tumour_type,
+                                                               protein_id_col = protein_id_col,
+                                                               analysis_col = analysis_col)
   SigEnrichRNAi_combined <-  ReMEA::combine_remea_scores(remea_results = SigEnrichRNAi)
   message("ReMEA scoring for RNAi complete.")
   # ReMEA scores for CRISPR
   SigEnrichCRISPR <-  ReMEA::response_marker_enrichment_analysis(protein_data = na.omit(protein_data),
                                                                  marker_type = c("CRISPR"),
-                                                                 tumour_type = tumour_type)
+                                                                 tumour_type = tumour_type,
+                                                                 protein_id_col = protein_id_col,
+                                                                 analysis_col = analysis_col)
   SigEnrichCRISPR_combined <-  ReMEA::combine_remea_scores(remea_results = SigEnrichCRISPR)
   message("ReMEA scoring for CRISPR complete.")
   # ReMEA scores for CRISPR & RNAi
   SigEnrichGENE <-  ReMEA::response_marker_enrichment_analysis(protein_data = na.omit(protein_data),
-                                                                 marker_type = c("CRISPR", "RNAi"),
-                                                                 tumour_type = tumour_type)
+                                                               marker_type = c("CRISPR", "RNAi"),
+                                                               tumour_type = tumour_type,
+                                                               protein_id_col = protein_id_col,
+                                                               analysis_col = analysis_col)
   SigEnrichGENE_combined <-  ReMEA::combine_remea_scores(remea_results = SigEnrichGENE)
   message("ReMEA scoring for RNAi/CRISPR complete.")
   scores <- list(drug_combined = SigEnrichDrug_combined,

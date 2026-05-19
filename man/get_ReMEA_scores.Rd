@@ -6,9 +6,11 @@
 \usage{
 get_ReMEA_scores(
   protein_data,
-  tumour_type,
+  tumour_type = c("pan"),
   marker_type = "DRUG",
   signature_version = "CellLines",
+  protein_id_col = NULL,
+  analysis_col = NULL,
   return_individual_scores = FALSE
 )
 }
@@ -20,10 +22,14 @@ must be included as protein_acc. Fold change data must be in column 2.}
 or non-solid tumours only. If multiple passed, these will be analysed in looped format.}
 
 \item{marker_type}{`string` Perturbagen type for analysis. These are CRISPR, RNAi or DRUG.
-Multiple markers may be passed. In case of selecting both RNAi and CRISPR, these
-may be combined using the `combine_remea_score` function.}
+In case of selecting both RNAi and CRISPR, these may be combined using the `combine_remea_score` function.}
 
 \item{signature_version}{`string` Signature version to use.}
+
+\item{protein_id_col}{Column for protein identities. To use package signatures,
+these must refer to UniProt entry name of proteins. If NULL, will default to first column.}
+
+\item{analysis_col}{Data column to analysis. If NULL, will default to second column.}
 
 \item{return_individual_scores}{`logical` whether to return results for individual db scores.}
 }

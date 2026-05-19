@@ -11,6 +11,9 @@
 #' @examples
 #' combine_remea_score(remea_results = remea_results_dt)
 combine_remea_scores <- function(remea_results){
+  if (missing(remea_results)) {
+    stop("`remea_results` is missing.", call. = FALSE)
+  }
   # Check if object is data.table.
   if (!data.table::is.data.table(remea_results)) {
     print("Note, remea_results was not passed as data.table, converting now...")

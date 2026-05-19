@@ -11,5 +11,11 @@ Created on 15/08/2023, this iteration revised major functions, added roxygen com
 \author{
 \strong{Maintainer}: Luke Higgins \email{l.higgins@qmul.ac.uk}
 
+Authors:
+\itemize{
+  \item Luke Higgins \email{l.higgins@qmul.ac.uk}
+  \item Pedro Rodriguez Cutillas \email{p.cutillas@qmul.ac.uk}
+}
+
 }
 \keyword{internal}

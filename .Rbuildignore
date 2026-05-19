@@ -4,3 +4,5 @@
 ^\.Rproj\.user$
 ^data-raw$
 ^function_archive$
+^\.positai$
+^\.claude$

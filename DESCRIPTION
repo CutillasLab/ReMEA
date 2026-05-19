@@ -1,7 +1,7 @@
 Package: ReMEA
 Type: Package
 Title: Response Marker Enrichment Analysis (Title Case)
-Version: 0.2.4
+Version: 0.1.1
 Authors@R: c(
     person("Luke", "Higgins", , "l.higgins@qmul.ac.uk", role = c("aut", "cre")),
     person("Pedro", "Rodriguez Cutillas", , "p.cutillas@qmul.ac.uk", role = c("aut", "cre"))
@@ -16,7 +16,6 @@ Encoding: UTF-8
 LazyData: true
 Depends: 
     R (>= 3.5)
-RoxygenNote: 7.3.2
 Suggests: 
     cowplot,
     ggrepel,
@@ -31,3 +30,4 @@ Imports:
     foreach,
     future,
     ggplot2
+Config/roxygen2/version: 8.0.0

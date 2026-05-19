@@ -4,7 +4,13 @@
 \alias{signature_enrichment}
 \title{Signature enrichment}
 \usage{
-signature_enrichment(protein_data, signatures, signature.type)
+signature_enrichment(
+  protein_data,
+  signatures,
+  signature.type = "signature_id",
+  protein_id_col = NULL,
+  analysis_col = NULL
+)
 }
 \arguments{
 \item{protein_data}{`data.frame` Proteomics differential testing results. Protein name
@@ -15,6 +21,11 @@ This can be found in the ReMEA NAMESPACE. e.g. ReMEA::list_of_signature_lists}
 
 \item{signature.type}{`string` Naming variable for signatures. Main purpose if for
 response_marker_enrichment_analysis, where this indicates signature DB ids.}
+
+\item{protein_id_col}{Column that indicates protein IDs. For package signatures, this
+must be UniProt entry name. If NULL, will default to first column.}
+
+\item{analysis_col}{Data column that is to be analysed. If NULL, will default to second column.}
 }
 \value{
 `data.table` with enrichment results

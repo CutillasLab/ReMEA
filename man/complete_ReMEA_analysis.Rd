@@ -6,8 +6,10 @@
 \usage{
 complete_ReMEA_analysis(
   protein_data,
-  tumour_type,
+  tumour_type = c("pan"),
   signature_version = "CellLines",
+  protein_id_col = NULL,
+  analysis_col = NULL,
   save_xlxs = FALSE
 )
 }
@@ -19,6 +21,11 @@ must be included as protein_acc. Fold change data must be in column 2.}
 or non-solid tumours only. If multiple passed, these will be analysed in looped format.}
 
 \item{signature_version}{`string` Signature version to use.}
+
+\item{protein_id_col}{Column for protein identities. To use package signatures,
+these must refer to UniProt entry name of proteins. If NULL, will default to first column.}
+
+\item{analysis_col}{Data column to analysis. If NULL, will default to second column.}
 
 \item{save_xlxs}{`logical` Whether or not to save scores to xlxs file.}
 }

@@ -7,8 +7,10 @@
 response_marker_enrichment_analysis(
   protein_data,
   marker_type = c("DRUG", "RNAi", "CRISPR"),
-  tumour_type = c("haem", "solid"),
+  tumour_type = c("pan"),
   signature_version = "CellLines",
+  protein_id_col = NULL,
+  analysis_col = NULL,
   dataset_selection = FALSE,
   proteomics_datasets = NULL,
   perturbation_datasets = NULL
@@ -26,6 +28,11 @@ may be combined using the `combine_remea_score` function}
 or non-solid tumours only. If multiple passed, these will be analysed in looped format.}
 
 \item{signature_version}{`string` Signature version to use.}
+
+\item{protein_id_col}{Column for protein identities. To use package signatures,
+these must refer to UniProt entry name of proteins. If NULL, will default to first column.}
+
+\item{analysis_col}{Data column to analysis. If NULL, will default to second column.}
 
 \item{dataset_selection}{`logical` Whether to select specific signature DBs.}
 
@@ -46,5 +53,5 @@ set.
 \examples{
 response_marker_enrichment_analysis(protein_data,
 marker_type=c("DRUG", "RNAi", "CRISPR"),
-tumour_type=c("haem","solid"))
+tumour_type=c("pan"))
 }
