@@ -6,3 +6,4 @@
 ^function_archive$
 ^\.positai$
 ^\.claude$
+^README\.Rmd$
