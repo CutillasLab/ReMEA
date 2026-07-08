@@ -31,3 +31,59 @@ Run: `devtools::install_github("CutillasLab/ReMEA")`
     - Replace the string argument to path with the actual location
     - You may first need to install `devtools`: `install.packages("devtools")`
 
+## Usage
+For a complete analysis of your data, the `ReMEA::complete_ReMEA_analysis` function
+runs the analysis for all perturbation modalities and signatures. Default settings
+apply the analysis using the "CellLines" signatures. This returns a list of all the 
+resulting scores. This includes the individual db scores and main ReMEA score (av.effect).
+```{r, eval=FALSE}
+results <- ReMEA::complete_ReMEA_analysis(protein_data = proteomics_data)
+```
+We to analyse data using signatures derived from the beat AML data, enter select 
+the "BeatAML" signatures in the function. In addition, the haem tumour type must 
+be specified:
+```{r, eval=FALSE}
+results <- ReMEA::complete_ReMEA_analysis(protein_data = proteomics_data,
+                                          signature_version = "BeatAML",
+                                          tumour_type = c("haem"))
+```
+The core component of ReMEA is the `ReMEA::response_marker_enrichment_analysis` 
+function. If you wish use use specific signature sets, these can be specified here:
+```{r, eval=FALSE}
+results <- ReMEA::response_marker_enrichment_analysis(protein_data = proteomics_data,
+                                                      marker_type = "DRUG",
+                                                      tumour_type = "pan",
+                                                      signature_version = "CellLines")
+```
+If you wish to use your own signatures, this can be achieved using the base 
+`ReMEA::signature_enrichment` function.
+
+## Interpretation of results
+The primary score for interpretation is the av.effect score, this is the principal
+ReMEA score which incorporates the output from the different signature sets (constructed
+from the different cell line proteomics datasets).
+
+A positive ReMEA score (av.effect) is interpreted as an increase in sensitivity
+to that perturbation. A negative score suggests resistance to that perturbation.
+The magnitude of scores can differ between datasets (similar to other enrichment
+methods). Accompanying p-values and overall ranking of scores should be used to
+interpret the returned scores.
+
+## Interpretation of results
+For reference, an explanation 
+of the fields from the output can be reviewd using the `ReMEA::output_description` 
+function.
+```{r}
+ReMEA::output_description(
+  combined_scores = TRUE,
+  individual_scores = FALSE
+)
+```
+To further investigate a particular ReMEA score, the individual dataset signature
+metrics can be reviewed. See below for a description of the data fields.
+```{r}
+ReMEA::output_description(
+  combined_scores = FALSE,
+  individual_scores = TRUE
+)
+```
