@@ -89,7 +89,8 @@ complete_ReMEA_analysis <- function(protein_data,
                                                                marker_type = c("DRUG"),
                                                                tumour_type = tumour_type,
                                                                protein_id_col = protein_id_col,
-                                                               analysis_col = analysis_col)
+                                                               analysis_col = analysis_col,
+                                                               signature_version = signature_version)
   SigEnrichDrug_combined <- ReMEA::combine_remea_scores(remea_results = SigEnrichDrug)
   message("ReMEA scoring for drugs complete.")
   # ReMEA scores for RNAi
@@ -97,7 +98,8 @@ complete_ReMEA_analysis <- function(protein_data,
                                                                marker_type = c("RNAi"),
                                                                tumour_type = tumour_type,
                                                                protein_id_col = protein_id_col,
-                                                               analysis_col = analysis_col)
+                                                               analysis_col = analysis_col,
+                                                               signature_version = signature_version)
   SigEnrichRNAi_combined <-  ReMEA::combine_remea_scores(remea_results = SigEnrichRNAi)
   message("ReMEA scoring for RNAi complete.")
   # ReMEA scores for CRISPR
@@ -105,7 +107,8 @@ complete_ReMEA_analysis <- function(protein_data,
                                                                  marker_type = c("CRISPR"),
                                                                  tumour_type = tumour_type,
                                                                  protein_id_col = protein_id_col,
-                                                                 analysis_col = analysis_col)
+                                                                 analysis_col = analysis_col,
+                                                                 signature_version = signature_version)
   SigEnrichCRISPR_combined <-  ReMEA::combine_remea_scores(remea_results = SigEnrichCRISPR)
   message("ReMEA scoring for CRISPR complete.")
   # ReMEA scores for CRISPR & RNAi
@@ -113,7 +116,9 @@ complete_ReMEA_analysis <- function(protein_data,
                                                                marker_type = c("CRISPR", "RNAi"),
                                                                tumour_type = tumour_type,
                                                                protein_id_col = protein_id_col,
-                                                               analysis_col = analysis_col)
+                                                               analysis_col = analysis_col,
+                                                               signature_version = signature_version)
+
   SigEnrichGENE_combined <-  ReMEA::combine_remea_scores(remea_results = SigEnrichGENE)
   message("ReMEA scoring for RNAi/CRISPR complete.")
   scores <- list(drug_combined = SigEnrichDrug_combined,

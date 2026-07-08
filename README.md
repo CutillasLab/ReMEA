@@ -41,18 +41,20 @@ analysis using the “CellLines” signatures. This returns a list of all
 the resulting scores. This includes the individual db scores and main
 ReMEA score (av.effect).
 
+These fall under the “\_combined” and “\_individual_dbs” slots. The
+combined set represent the main ReMEA output, with the composite ReMEA
+score across all signatures. The “individual_dbs” score sets represents
+the scores from individual signature sets.
+
+Ensure your data has proteins annotated with their Uniprot Entry Name.
+This column can be specified with the `protein_id_col` argument. If not
+specified, the first column with be used to the protein ID. Similarly,
+the numeric column to be analysed (e.g. fold change) can be specified
+with the `analysis_col` argument. If not specified, the second column
+will be used for input.
+
 ``` r
 results <- ReMEA::complete_ReMEA_analysis(protein_data = proteomics_data)
-```
-
-We to analyse data using signatures derived from the beat AML data,
-enter select the “BeatAML” signatures in the function. In addition, the
-haem tumour type must be specified:
-
-``` r
-results <- ReMEA::complete_ReMEA_analysis(protein_data = proteomics_data,
-                                          signature_version = "BeatAML",
-                                          tumour_type = c("haem"))
 ```
 
 The core component of ReMEA is the
@@ -65,6 +67,10 @@ results <- ReMEA::response_marker_enrichment_analysis(protein_data = proteomics_
                                                       tumour_type = "pan",
                                                       signature_version = "CellLines")
 ```
+
+Tumour type and signature version arguments are to specify particular
+signatures. All signatures from cell lines are constructed using a `pan`
+cancer context.
 
 If you wish to use your own signatures, this can be achieved using the
 base `ReMEA::signature_enrichment` function.
@@ -80,13 +86,15 @@ A positive ReMEA score (av.effect) is interpreted as an increase in
 sensitivity to that perturbation. A negative score suggests resistance
 to that perturbation. The magnitude of scores can differ between
 datasets (similar to other enrichment methods). Accompanying p-values
-and overall ranking of scores should be used to interpret the returned
-scores.
+and overall ranking of scores should be used to aid the interpretation
+of the returned scores.
 
-## Interpretation of results
+## Description of the output
 
 For reference, an explanation of the fields from the output can be
-reviewd using the `ReMEA::output_description` function.
+reviewed using the `ReMEA::output_description` function. Note, the drug
+perturbations are those from the GDSC2 dataset, and are labelled as they
+are from direct download from the GDSC2 resource.
 
 ``` r
 ReMEA::output_description(
