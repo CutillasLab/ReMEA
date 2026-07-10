@@ -16,16 +16,16 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Usage
 For a complete analysis of your data, the `ReMEA::complete_ReMEA_analysis` function
 runs ReMEA  for all perturbation modalities and cell line signatures(`signature_version = "CellLines"`). 
-This returns a list of all the resulting score tables. This includes the individual 
+This returns a list of all the resulting score tables, including the individual 
 signature scores and main ReMEA score (av.effect).
 
-These fall under the "_combined" and "_individual_dbs" slots. The combined set 
+Output tables fall under the "_combined" and "_individual_dbs" slots. The combined set 
 represent the main ReMEA output, that is, the composite ReMEA score across all signatures.
 The "individual_dbs" score sets represents the scores from individual signature sets
 (derived from specific datasets).
 
-For the analysis, ensure your data has proteins annotated with their Uniprot Entry Name. 
-This column can be specified with the `protein_id_col` argument. If not specified, 
+For the analysis, ensure your proteomics data is a data frame and has proteins annotated with their Uniprot Entry Name. 
+This column name can be specified with the `protein_id_col` argument. If not specified, 
 the first column with be used for the protein ID. Similarly, the numeric column 
 to be analysed (e.g. fold change) can be specified with the `analysis_col` argument. 
 If not specified, the second column will be used for input.
@@ -47,15 +47,15 @@ All signatures from cell lines are constructed using a `pan` cancer context, and
 forms the bulk of the signatures available currently.
 
 ## Interpretation of results
-The primary score for interpretation is the av.effect score, this is the principal
+The primary score for interpretation is the av.effect score. This is the principal
 ReMEA score which incorporates the output from the different signature sets (constructed
 from the different cell line proteomics datasets).
 
-A positive ReMEA score (av.effect) is interpreted as an increase in sensitivity
-to that perturbation. A negative score suggests resistance to that perturbation.
+A positive ReMEA score (av.effect) is interpreted as an increase in markers of sensitivity
+to that perturbation. A negative score suggests enrichment of resistance markers to that perturbation.
 The magnitude of scores can differ between datasets (similar to other enrichment
 methods). Accompanying p-values and overall ranking of scores should be used to
-aid the interpretation of the returned results
+aid the interpretation of the returned results.
 
 ## Description of the output
 For reference, an explanation of the fields from the output can be reviewed
