@@ -2,7 +2,7 @@
 title: "Quick start"
 author: "Luke Higgins"
 date: "`r Sys.Date()`"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
