@@ -19,7 +19,9 @@ Depends:
 Suggests: 
     cowplot,
     ggrepel,
+    knitr,
     openxlsx,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: 
@@ -31,3 +33,4 @@ Imports:
     future,
     ggplot2
 Config/roxygen2/version: 8.0.0
+VignetteBuilder: knitr
