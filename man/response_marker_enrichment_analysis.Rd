@@ -36,11 +36,15 @@ these must refer to UniProt entry name of proteins. If NULL, will default to fir
 
 \item{dataset_selection}{`logical` Whether to select specific signature DBs.}
 
-\item{proteomics_datasets}{`string` Ids for proteomics dataset based signature
-DB section.}
+\item{proteomics_datasets}{Optional character vector of proteomics dataset
+names or patterns used to filter selected signature databases. Matching is
+case-insensitive and is performed against signature database names. Only used
+when `dataset_selection = TRUE`.}
 
-\item{perturbation_datasets}{`string` Ids for perturbation dataset based signature
-DB section.}
+\item{perturbation_datasets}{Optional character vector of perturbation dataset
+names or patterns used to filter selected signature databases. Matching is
+case-insensitive and is performed against signature database names. Only used
+when `dataset_selection = TRUE`.}
 }
 \value{
 `data.table` ReMEA scores and p values for selected signature DBs.

@@ -31,7 +31,7 @@ For a complete analysis using all cell line signatures, run:
 results <- ReMEA::complete_ReMEA_analysis(protein_data = proteomics_data)
 ```
 
-If you wish use use specific signature sets, the
+If you wish use use specific perturbation types, the
 `ReMEA::get_ReMEA_scores` function can be used as a convenient way to
 get specific perturbation modality scores. For example:
 
