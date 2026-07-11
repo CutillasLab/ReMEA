@@ -24,11 +24,12 @@ represent the main ReMEA output, that is, the composite ReMEA score across all s
 The "individual_dbs" score sets represents the scores from individual signature sets
 (derived from specific datasets).
 
-For the analysis, ensure your proteomics data is a data frame and has proteins annotated with their Uniprot Entry Name. 
-This column name can be specified with the `protein_id_col` argument. If not specified, 
-the first column with be used for the protein ID. Similarly, the numeric column 
-to be analysed (e.g. fold change) can be specified with the `analysis_col` argument. 
-If not specified, the second column will be used for input.
+For the analysis, ensure your proteomics data is a `data.table` or `data.frame` 
+(which will be converted internally into a `data.table`). Proteins must annotated with 
+their Uniprot Entry Name. This column name can be specified with the `protein_id_col` 
+argument. If not specified, the first column with be used for the protein ID. 
+Similarly, the numeric column to be analysed (e.g. fold change) can be specified 
+with the `analysis_col` argument. If not specified, the second column will be used for input.
 
 For a complete analysis using all cell line signatures, run:
 ```{r, eval=FALSE}

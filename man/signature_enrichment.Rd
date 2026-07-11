@@ -13,8 +13,13 @@ signature_enrichment(
 )
 }
 \arguments{
-\item{protein_data}{`data.frame` Proteomics differential testing results. Protein name
-must be included as protein_acc. Fold change data must be in column 2.}
+\item{protein_data}{A data.table containing proteomics differential-testing
+results. A data.frame is also accepted and will be converted to a
+data.table. Proteins must be annotated with their UniProt Entry Names.
+The protein identifier column can be specified using protein_id_col; if
+omitted, the first column is used. The numeric column to analyse, such as
+fold change, can be specified using analysis_col; if omitted, the second
+column is used.}
 
 \item{signatures}{`data.table` Signature DB with response protein signatures.
 This can be found in the ReMEA NAMESPACE. e.g. ReMEA::list_of_signature_lists}

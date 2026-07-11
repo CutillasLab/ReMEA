@@ -7,7 +7,7 @@
 combine_remea_scores(remea_results)
 }
 \arguments{
-\item{remea_results}{Output from response_marker_enrichment_analysis_v2 function.}
+\item{remea_results}{Output from response_marker_enrichment_analysis function.}
 }
 \value{
 `data.table` of combined ReMEA scores across signature DBs.
