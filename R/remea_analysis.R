@@ -1,7 +1,12 @@
 #' Get averaged ReMEA scores
 #'
-#' @param protein_data `data.frame` Proteomics differential testing results. Protein name
-#' must be included as protein_acc. Fold change data must be in column 2.
+#' @param protein_data A data.table containing proteomics differential-testing
+#' results. A data.frame is also accepted and will be converted to a
+#' data.table. Proteins must be annotated with their UniProt Entry Names.
+#' The protein identifier column can be specified using protein_id_col; if
+#' omitted, the first column is used. The numeric column to analyse, such as
+#' fold change, can be specified using analysis_col; if omitted, the second
+#' column is used.
 #' @param tumour_type `string` Whether to use markers from correlation analysis of solid tumours
 #' or non-solid tumours only. If multiple passed, these will be analysed in looped format.
 #' @param marker_type `string` Perturbagen type for analysis. These are CRISPR, RNAi or DRUG.
@@ -28,10 +33,7 @@ get_ReMEA_scores <- function(protein_data,
   if (missingArg(protein_data)){
     stop("Please provide `protein_data` argument.")
   }
-  # Check if object is data.table.
-  if (data.table::is.data.table(protein_data)) {
-    protein_data <- as.data.frame(protein_data)
-  }
+
   remea_indv_dbs <- ReMEA::response_marker_enrichment_analysis(protein_data = protein_data,
                                                                marker_type = marker_type,
                                                                tumour_type = tumour_type,

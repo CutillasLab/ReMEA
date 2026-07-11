@@ -2,7 +2,7 @@
 #'
 #' Function to average ReMEA scores for perturbagens across different datasets.
 #'
-#' @param remea_results Output from response_marker_enrichment_analysis_v2 function.
+#' @param remea_results Output from response_marker_enrichment_analysis function.
 #'
 #' @return `data.table` of combined ReMEA scores across signature DBs.
 #'
