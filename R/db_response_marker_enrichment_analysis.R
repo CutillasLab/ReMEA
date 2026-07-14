@@ -1,7 +1,7 @@
 #' @title Response marker enrichment analysis
 #'
 #' @description Performs signture delta ranks and delta zscores iteratively across
-#' selected signature DBs. Determined by pertubation type, tumour type and siganture
+#' selected signature DBs. Determined by pertubation type, tumour type and signature
 #' set.
 #' @param protein_data A data.table containing proteomics differential-testing
 #' results. A data.frame is also accepted and will be converted to a
@@ -13,8 +13,8 @@
 #' @param marker_type `string` Perturbagen type for analysis. These are CRISPR, RNAi or DRUG.
 #' Multiple markers may be passed. In case of selecting both RNAi and CRISPR, these
 #' may be combined using the `combine_remea_score` function
-#' @param tumour_type `string` Whether to use markers from correlation analysis of solid tumours
-#'  or non-solid tumours only. If multiple passed, these will be analysed in looped format.
+#' @param tumour_type `string` Tumour type of signature set. If using the "CellLines"
+#' signatures, set to "pan".
 #' @param signature_version `string` Signature version to use.
 #' @param protein_id_col Column for protein identities. To use package signatures,
 #' these must refer to UniProt entry name of proteins. If NULL, will default to first column.

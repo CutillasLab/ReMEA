@@ -7,8 +7,8 @@
 #' omitted, the first column is used. The numeric column to analyse, such as
 #' fold change, can be specified using analysis_col; if omitted, the second
 #' column is used.
-#' @param tumour_type `string` Whether to use markers from correlation analysis of solid tumours
-#' or non-solid tumours only. If multiple passed, these will be analysed in looped format.
+#' @param tumour_type `string` Tumour type of signature set. If using the "CellLines"
+#' signatures, set to "pan".
 #' @param marker_type `string` Perturbagen type for analysis. These are CRISPR, RNAi or DRUG.
 #' In case of selecting both RNAi and CRISPR, these may be combined using the `combine_remea_score` function.
 #' @param signature_version `string` Signature version to use.
@@ -62,8 +62,8 @@ get_ReMEA_scores <- function(protein_data,
 #'
 #' @param protein_data `data.table` Proteomics differential testing results. Protein name
 #' must be included as protein_acc. Fold change data must be in column 2.
-#' @param tumour_type `string` Whether to use markers from correlation analysis of solid tumours
-#' or non-solid tumours only. If multiple passed, these will be analysed in looped format.
+#' @param tumour_type `string` Tumour type of signature set. If using the "CellLines"
+#' signatures, set to "pan".
 #' @param signature_version `string` Signature version to use.
 #' @param protein_id_col Column for protein identities. To use package signatures,
 #' these must refer to UniProt entry name of proteins. If NULL, will default to first column.
